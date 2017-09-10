@@ -1,0 +1,91 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-badge/paper-badge.html">
+<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
+
+<dom-module id="todo-elements">
+
+  <template>
+
+    <style>
+      
+      :host{
+        display: block;
+        padding: 0px 16px;
+        max-width: 800px;
+        margin: 0px auto;
+      }
+      .todo-list{
+        margin-bottom: 60px;
+      }
+      .list {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: relative;
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+        font-size: 1.3em;
+        font-family: cambria;
+      }
+
+      .list-item{
+        align-self: left;
+        width: 90%;
+      }
+
+    </style>
+
+      <h1>Elements Used to Build Todo App</h1>
+      <div class="todo-list">
+        <dom-repeat items="[[elList]]">
+          <template>
+            <div class="list">
+              <div class="list-item">
+                [[_orderNumber(index)]]. <a href="https://www.webcomponents.org/element/PolymerElements/[[item]]">[[item]]</a>
+              </div>
+            </div>
+          </template>
+        </dom-repeat>
+      </div>
+  </template>
+
+  <script>
+
+    class TodoElements extends Polymer.Element {
+
+      static get is() { return 'todo-elements'; }
+
+      static get properties() { return {
+
+          elList: {
+            type:Array,
+            value:() => ['app-layout',
+              'app-route',
+              'app-storage',
+              'iron-icon',
+              'iron-iconset-svg',
+              'iron-pages',
+              'iron-selector',
+              'paper-checkbox',
+              'paper-input',
+              'paper-badge',
+              'paper-icon-button'
+            ]
+          }
+        }
+      }
+
+      _orderNumber(i){
+        return i+1;
+      }
+
+    }
+
+    customElements.define(TodoElements.is, TodoElements);
+
+  </script>
+
+</dom-module>

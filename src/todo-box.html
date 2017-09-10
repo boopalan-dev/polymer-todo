@@ -1,0 +1,180 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/app-storage/app-localstorage/app-localstorage-document.html">
+
+<dom-module id="todo-box">
+
+  <template>
+
+    <style>
+
+      :host{
+        display: block;
+        padding: 0px 16px;
+        max-width: 800px;
+        margin: 0px auto;
+      }
+      :host [icon="mode-edit"]{
+          color: var(--google-blue-100);
+          padding: 10px;
+          background: #3f51b5;
+          margin-right: 5px;
+      };
+      .todo-container{
+        margin-bottom: 30px;
+      }
+      .todo-list{
+        margin-bottom: 60px;
+      }
+      .list {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: relative;
+        padding: 10px 10px 10px 20px;
+        border: 1px solid #eee;
+        font-size: 1.3em;
+        font-family: cambria;
+      }
+
+      .list-item{
+        align-self: left;
+        width: 90%;
+      }
+      .list-item[itemdone]{
+        text-decoration: line-through;
+      }
+      .time-stamp{
+        display: block;
+        color: var(--google-grey-500);
+        padding-top: 5px;
+        font-size: 0.7em;
+      }
+
+      .delete-button {
+        width: 34px;
+        height: 34px;
+        color: var(--google-grey-700);
+        align-self: center;
+      }
+
+      .delete-button [icon='close'] {
+        height: 34px;
+      }
+
+    </style>
+    
+    <!-- Localstorage component to manipulate data from webstorage -->
+    <app-localstorage-document 
+        key="todo-app-data" 
+        data="{{todos}}"></app-localstorage-document>
+
+    <div class="todo-container">
+      <paper-input label="Enter todo...." name="toDo" id="toDo" on-keydown="_addTodo">
+      <iron-icon icon="mode-edit" slot="prefix"></iron-icon>
+    </paper-input>
+    </div>
+    
+    <div class="todo-list">
+      <dom-repeat items="[[todos]]">
+        <template>
+          <div class="list">
+            <div class="mark-done">
+              <paper-checkbox checked$="[[item.done]]" on-change="_markDone"></paper-checkbox>
+            </div>
+            <div class="list-item" itemdone$="[[item.done]]">
+              [[item.todo]]
+              <span class="time-stamp">[[item.date]]</span>
+            </div>
+            <div class="delete-button">
+              <paper-icon-button icon="close" on-click="_removeTodo" ></paper-icon-button>
+            </div>
+            </div>
+          </div>
+        </template>
+      </dom-repeat>
+    </div>
+  </template>
+
+  <script>
+
+    /**
+     * @customElement
+     * @polymer
+     */
+    class TodoBox extends Polymer.Element {
+
+      static get is() { return 'todo-box'; }
+
+      static get properties() { return {
+
+        todos: {
+          type:Array,
+          value:() => []
+        },
+        todoStat:{
+          type:Object,
+          computed:"_computeStat(todos.splices)",
+          notify:true
+        }
+
+      }}
+
+      _getDateFor(){
+        var d = new Date();
+        var s = d.toDateString();
+            return s.slice(4);
+      }
+
+      _makeTodoItem(){
+        var o = {};
+            o.todo = this.$.toDo.value;
+            o.done = false;
+            o.date = this._getDateFor();
+            o.stamp = new Date().getTime();
+            this.push('todos', o);
+      }
+      _computeStat() {
+        var o = {
+          total:this.todos.length,
+          undone:0,
+          done:0
+        };
+
+        if (this.todos) {
+          this.todos.reduce((total, entry) => {
+            if(entry.done){
+              o.done += 1;
+            } else {
+              o.undone += 1;
+            }
+          }, 0);
+        }
+
+        return o;
+      }
+
+      _addTodo(e) {        
+        if(e.keyCode == 13 && this.$.toDo.value !== '') {
+          this._makeTodoItem();
+          this.$.toDo.value = '';
+        }
+      }
+
+      _markDone(e){
+        var data = e.model.__data;
+          data.item.done = !data.item.done;
+          this.notifyPath('todos.'+ data.itemsIndex +'.done');
+          this.todos = this.todos.slice();
+      }
+
+      _removeTodo(e){
+        var i = e.model.__data.itemsIndex;
+        this.splice('todos', i, 1);
+      }
+    }
+
+    customElements.define(TodoBox.is, TodoBox);
+
+  </script>
+
+</dom-module>

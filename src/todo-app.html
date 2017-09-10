@@ -1,0 +1,186 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/app-layout/app-header/app-header.html">
+<link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../bower_components/app-layout/app-drawer/app-drawer.html">
+
+<link rel="import" href="../bower_components/app-route/app-location.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+
+
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../bower_components/iron-selector/iron-selector.html">
+
+
+<link rel="import" href="todo-icons.html">
+<link rel="import" href="todo-elements.html">
+<link rel="import" href="todo-box.html">
+
+<dom-module id="todo-app">
+  <template>
+    <style>
+      :host {
+        display: block;
+        --app-drawer-scrim-background:var(--google-blue-100);
+        font-family: monospace;
+      }
+      
+      .app-title {
+        font-weight:bold;
+      }
+      .todo-stat{
+        display: inline-block;
+        margin-left: 15px;
+        margin-right: 15px;
+        font-size: 80%;
+      }
+
+      .todo-stat > paper-badge {
+        --paper-badge-margin-left: 20px;
+        --paper-badge-margin-bottom: 0px;
+      }
+      .todo-done{
+        --paper-badge-background: #3f51b5;
+      }
+      .todo-total{
+        --paper-badge-background: var(--google-grey-700);
+      }
+      
+      .drawer-list {
+        margin: 0 20px;
+      }
+
+      .drawer-list a {
+        display: block;
+        padding: 0 16px;
+        line-height: 40px;
+        text-decoration: none;
+        color: var(--app-secondary-color);
+      }
+
+      .drawer-list a.iron-selected {
+        color: black;
+        font-weight: bold;
+      }
+
+      app-drawer {
+        z-index: 3;
+      }
+
+      iron-pages {
+        max-width: 1440px;
+        margin: 0 auto;
+      }
+
+      footer {
+        text-align: center;
+        padding: 10px;
+        background: var(--google-grey-300);
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        right: 0;
+      }
+      .app-credit{
+        color: var(--paper-orange-600);
+      }
+      .app-copy{
+        color: var(--google-blue-700);
+      }
+    </style>
+    
+
+    <!--
+      app-location and app-route elements provide the state of the URL for the app. -->
+    <app-location route="{{route}}"></app-location>
+    <app-route
+        route="{{route}}"
+        pattern="/:page"
+        data="{{routeData}}"
+        tail="{{subroute}}"></app-route>
+
+    <app-header reveals>
+        <app-toolbar>
+            <paper-icon-button icon="menu" on-click="_toggleDrawer"></paper-icon-button>
+            <div main-title class="app-title">ToDo=></div>
+            <div class="todo-stat">
+              <span>Total</span>
+              <paper-badge label="[[todoStat.total]]" class="todo-total"></paper-badge>
+            </div>
+            <div class="todo-stat">
+              <span>Done</span>
+              <paper-badge label="[[todoStat.done]]" class="todo-done"></paper-badge>
+            </div>
+
+            <div class="todo-stat">
+              <span>Undone</span>
+              <paper-badge label="[[todoStat.undone]]"></paper-badge>
+            </div>
+        </app-toolbar>
+    </app-header>
+    <app-drawer opened="{{drawerOpened}}" id="drawer" swipe-open>
+      <iron-selector role="navigation" class="drawer-list" selected="[[page]]" attr-for-selected="name">
+          <dom-repeat items="[[pagelist]]" as="list">
+            <template>
+              <a name="[[list.name]]" href="/[[list.name]]">[[list.title]]</a>
+            </template>
+          </dom-repeat>
+        </iron-selector>
+    </app-drawer>
+
+    <iron-pages role="main" selected="[[page]]" attr-for-selected="name" selected-attribute="visible">
+      <!-- todo view -->
+      <todo-box name="todo-list" todo-stat="{{todoStat}}"></todo-box>
+      <todo-elements name="element-list"></todo-elements>
+    </iron-pages>
+
+    <footer>
+      <span class="app-copy">&copy;tOdoDemo</span> | 
+      <a href="https://twitter.com/boopalan_dev" target="_blank" class="app-credit">@boopalan_dev</a>
+    </footer>
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class TodoApp extends Polymer.Element {
+
+      static get is() { return 'todo-app'; }
+
+      static get properties() {
+        return {
+          page: {
+            type: String,
+            reflectToAttribute: true
+          },
+          pagelist: {
+            type: Array,
+            value: () => [{name:'todo-list',title:'ToDo List'}, {name:'element-list', title:'Elements Used'}],
+            notify: true
+          }
+        };
+      }
+
+      static get observers() { return [
+        '_routePageChanged(routeData.page)'
+      ]}
+
+       _toggleDrawer() {
+        this.drawerOpened = !this.drawerOpened;
+      }
+
+      _routePageChanged(page) {
+        console.log(page);
+        this.page = (page === 'components' || page == "")? 'todo-list' : page;
+
+        // Close the drawer - in case the *route* change came from a link in the drawer.
+        this.drawerOpened = false;
+      }
+
+    }
+
+    window.customElements.define(TodoApp.is, TodoApp);
+  </script>
+</dom-module>
